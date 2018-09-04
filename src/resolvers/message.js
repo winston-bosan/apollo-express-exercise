@@ -1,46 +1,39 @@
-import uuidv4 from "uuid/v4";
+import { combineResolvers } from "graphql-resolvers";
+import { isAuthenticated, isMessageOwner } from "./authorization";
 
 export default {
   Query: {
-    messages: (parent, args, { models }) => {
-      return Object.values(models.messages);
+    messages: async (parent, args, { models }) => {
+      return await models.Message.findAll();
     },
-    message: (parent, { id }, { models }) => {
-      return models.messages[id];
+    message: async (parent, { id }, { models }) => {
+      return await models.Message.findById(id);
     }
   },
 
   Mutation: {
-    createMessage: (parent, { text }, { me, models }) => {
-      const id = uuidv4();
-      const message = {
-        id,
-        text,
-        userId: me.id
-      };
-
-      models.messages[id] = message;
-      models.users[me.id].messageIds.push(id);
-
-      return message;
-    },
-
-    deleteMessage: (parent, { id }, { models }) => {
-      const { [id]: message, ...otherMessages } = models.messages;
-
-      if (!message) {
-        return false;
+    createMessage: combineResolvers(
+      isAuthenticated,
+      async (parent, { text }, { models, me }) => {
+        return await models.Message.create({
+          text,
+          userId: me.id
+        });
       }
+    ),
 
-      models.messages = otherMessages;
-
-      return true;
-    }
+    deleteMessage: combineResolvers(
+      isAuthenticated,
+      isMessageOwner,
+      async (parent, { id }, { models }) => {
+        return await models.Message.destroy({ where: { id } });
+      }
+    )
   },
 
   Message: {
-    user: (message, args, { models }) => {
-      return models.users[message.userId];
+    user: async (message, args, { models }) => {
+      return await models.User.findById(message.userId);
     }
   }
 };
