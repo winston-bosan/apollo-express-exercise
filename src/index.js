@@ -1,6 +1,7 @@
 //This stays at the very top so our process environment context is loaded first
 //Database password and stuff
 import "dotenv/config";
+import http from "http";
 import express from "express";
 import cors from "cors";
 import { ApolloServer, AuthenticationError } from "apollo-server-express";
@@ -33,25 +34,36 @@ const server = new ApolloServer({
       message
     };
   },
-  context: async ({ req }) => {
-    const me = await getMe(req);
+  context: async ({ req, connection }) => {
+    if (connection) {
+      return {
+        models
+      };
+    }
 
-    return {
-      models,
-      me,
-      secret: process.env.SECRET
-    };
+    if (req) {
+      const me = await getMe(req);
+      return {
+        models,
+        me,
+        secret: process.env.SECRET
+      };
+    }
   }
 });
 
 server.applyMiddleware({ app, path: "/graphql" });
+const httpServer = http.createServer(app);
+server.installSubscriptionHandlers(httpServer);
 const eraseDatabaseOnSync = true;
 
-sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
-  if (eraseDatabaseOnSync) {
+//Test for dev environment / test
+const isTest = !!process.env.TEST_DATABASE;
+sequelize.sync({ force: isTest }).then(async () => {
+  if (isTest) {
     createUsersWithMessages(new Date());
   }
-  app.listen({ port: 8000 }, () => {
+  httpServer.listen({ port: 8000 }, () => {
     console.log(
       "\n🚀  Apollo Initialed on \x1b[33mhttp://localhost:8000/graphql\x1b[0m\n"
     );

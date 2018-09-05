@@ -37,4 +37,13 @@ export default gql`
     user: User
     createdAt: String
   }
+
+  # Subscription stuff
+  extend type Subscription {
+    messageCreated: MessageCreated
+  }
+
+  type MessageCreated {
+    message: Message
+  }
 `;
