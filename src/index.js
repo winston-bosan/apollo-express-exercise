@@ -49,7 +49,7 @@ const eraseDatabaseOnSync = true;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
   if (eraseDatabaseOnSync) {
-    createUsersWithMessages();
+    createUsersWithMessages(new Date());
   }
   app.listen({ port: 8000 }, () => {
     console.log(
@@ -70,17 +70,18 @@ const getMe = async req => {
   }
 };
 
-const createUsersWithMessages = async () => {
+const createUsersWithMessages = async date => {
   await models.User.create(
     {
       username: "rwieruch",
       email: "hello@robin.com",
       password: "rwieruch",
       //this is for our test for the new Permission Role based authentication system
-      role: 'ADMIN',
+      role: "ADMIN",
       messages: [
         {
-          text: "Published the Road to learn React"
+          text: "Published the Road to learn React",
+          createdAt: date.setSeconds(date.getSeconds() + 2)
         }
       ]
     },
@@ -96,10 +97,12 @@ const createUsersWithMessages = async () => {
       password: "ddavids",
       messages: [
         {
-          text: "Happy to release ..."
+          text: "Happy to release ...",
+          createdAt: date.setSeconds(date.getSeconds() + 2)
         },
         {
-          text: "Published a complete ..."
+          text: "Published a complete ...",
+          createdAt: date.setSeconds(date.getSeconds() + 2)
         }
       ]
     },
