@@ -6,8 +6,8 @@ import express from "express";
 import cors from "cors";
 import { ApolloServer, AuthenticationError } from "apollo-server-express";
 import jwt from "jsonwebtoken";
-import DataLoader from 'dataloader';
-import loaders from './loaders';
+import DataLoader from "dataloader";
+import loaders from "./loaders";
 
 import schema from "./schema";
 import resolvers from "./resolvers";
@@ -22,7 +22,7 @@ const app = express();
 app.use(cors());
 
 //The set of dataloader cachenabled loaders
-// - Be aware, caching is sometimes problematic with realtime updates! 
+// - Be aware, caching is sometimes problematic with realtime updates!
 // const userLoader = new DataLoader(keys => loaders.user.batchUsers(keys, models));
 
 const server = new ApolloServer({
@@ -56,8 +56,10 @@ const server = new ApolloServer({
         //passing loaders into context
         loaders: {
           user: new DataLoader(keys => loaders.user.batchUsers(keys, models)),
-          messages: new DataLoader(keys => loaders.messages.batchMessages(keys, models)),
-        },
+          messages: new DataLoader(keys =>
+            loaders.messages.batchMessages(keys, models)
+          )
+        }
       };
     }
   }
@@ -70,13 +72,16 @@ const eraseDatabaseOnSync = true;
 
 //Test for dev environment / test
 const isTest = !!process.env.TEST_DATABASE;
-sequelize.sync({ force: isTest }).then(async () => {
-  if (isTest) {
+const isProduction = !!process.env.DATABASE_URL;
+const port = process.env.PORT || 8000;
+
+sequelize.sync({ force: isTest || isProduction }).then(async () => {
+  if (isTest || isProduction) {
     createUsersWithMessages(new Date());
   }
-  httpServer.listen({ port: 8000 }, () => {
+  httpServer.listen({ port }, () => {
     console.log(
-      "\n🚀  Apollo Initialed on \x1b[33mhttp://localhost:8000/graphql\x1b[0m\n"
+      `\n🚀  Apollo Initialed on \x1b[33mhttp://localhost:${port}/graphql\x1b[0m\n`
     );
   });
 });
