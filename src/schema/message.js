@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import { gql } from "apollo-server-express";
 
 //use extend type Athing {} when modularizaing
 
@@ -10,7 +10,7 @@ import { gql } from 'apollo-server-express';
 
 export default gql`
   extend type Query {
-    messages: [Message]
+    messages(cursor: String, limit: Int): MessageConnection
     message(id: ID): Message
   }
 
@@ -19,9 +19,31 @@ export default gql`
     deleteMessage(id: ID): Boolean
   }
 
+  # A list of messages along with the following meta info
+  #   - PageInfo: Pagination
+  type MessageConnection {
+    edges: [Message]
+    pageInfo: PageInfo!
+  }
+
+  type PageInfo {
+    endCursor: String
+    hasNextPage: Boolean
+  }
+
   type Message {
     id: ID
     text: String
     user: User
+    createdAt: String
+  }
+
+  # Subscription stuff
+  extend type Subscription {
+    messageCreated: MessageCreated
+  }
+
+  type MessageCreated {
+    message: Message
   }
 `;
