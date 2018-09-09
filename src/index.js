@@ -6,6 +6,8 @@ import express from "express";
 import cors from "cors";
 import { ApolloServer, AuthenticationError } from "apollo-server-express";
 import jwt from "jsonwebtoken";
+import DataLoader from 'dataloader';
+import loaders from './loaders';
 
 import schema from "./schema";
 import resolvers from "./resolvers";
@@ -18,6 +20,10 @@ import models, { sequelize } from "./models";
  */
 const app = express();
 app.use(cors());
+
+//The set of dataloader cachenabled loaders
+// - Be aware, caching is sometimes problematic with realtime updates! 
+// const userLoader = new DataLoader(keys => loaders.user.batchUsers(keys, models));
 
 const server = new ApolloServer({
   typeDefs: schema,
@@ -46,7 +52,12 @@ const server = new ApolloServer({
       return {
         models,
         me,
-        secret: process.env.SECRET
+        secret: process.env.SECRET,
+        //passing loaders into context
+        loaders: {
+          user: new DataLoader(keys => loaders.user.batchUsers(keys, models)),
+          messages: new DataLoader(keys => loaders.messages.batchMessages(keys, models)),
+        },
       };
     }
   }

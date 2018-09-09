@@ -74,11 +74,11 @@ export default {
   },
 
   Message: {
-    user: async (message, args, { models }) => {
-      return await models.User.findById(message.userId);
+    user: async (message, args, { models, loaders }) => {
+      console.log()
+      return await loaders.user.load(message.userId);
     },
     createdAt: message => {
-      console.log(message.createdAt);
       return new Date(message.createdAt).toISOString();
     }
   },

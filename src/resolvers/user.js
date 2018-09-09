@@ -66,12 +66,20 @@ export default {
   },
 
   User: {
-    messages: async (user, args, { models }) => {
-      return await models.Message.findAll({
-        where: {
-          userId: user.id
-        }
-      });
+    messages: async (user, args, { models, loaders }) => {
+      const result = await loaders.messages.load(user.id);
+      return result;
+      // return await models.Message.findAll({
+      //   where: {
+      //     userId: user.id
+      //   }
+      // });
     }
   }
 };
+
+// const result = await loaders.message.load(user.id);
+// console.group()
+// console.log(result.dataValues);
+// console.groupEnd()
+// return result;
