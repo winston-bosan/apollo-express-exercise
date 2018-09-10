@@ -9,7 +9,7 @@ const user = (sequelize, DataTypes) => {
       validate: {
         notEmpty: {
           args: true,
-          msg: "A username has to have a text body that is not empty."
+          msg: "A username has to have a content body that is not empty."
         }
       }
     },
@@ -36,7 +36,7 @@ const user = (sequelize, DataTypes) => {
   });
 
   User.associate = models => {
-    User.hasMany(models.Message);
+    User.hasMany(models.Act);
   };
 
   User.beforeCreate(async user => {

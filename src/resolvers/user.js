@@ -66,14 +66,31 @@ export default {
   },
 
   User: {
-    messages: async (user, args, { models, loaders }) => {
-      const result = await loaders.messages.load(user.id);
-      return result;
-      // return await models.Message.findAll({
-      //   where: {
-      //     userId: user.id
-      //   }
-      // });
+    acts: async (user, args, { models, loaders }) => {
+      // const result = await loaders.messages.load(user.id);
+      // return result;
+      return await models.Act.findAll({
+        where: {
+          userId: user.id
+        }
+      });
+    },
+    movements: async (user, args ,{ models }) => {
+      let childrenActs = await models.Act.findAll({
+        where: {
+          userId: user.id
+        }
+      })
+      let childrenActsIds = childrenActs.map(act => {
+        return act.id
+      })
+      console.log(childrenActsIds)
+      let grandchildrenMovements = await models.Movement.findAll({
+        where: {
+          actId: childrenActsIds
+        }
+      });
+      return grandchildrenMovements;
     }
   }
 };

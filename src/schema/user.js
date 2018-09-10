@@ -32,7 +32,8 @@ export default gql`
   type User {
     id: ID
     username: String
-    messages: [Message]
+    acts: [Act]
+    movements: [Movement]
     email: String
     role: String
   }
