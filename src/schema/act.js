@@ -6,6 +6,11 @@ export default gql`
     act(id: ID): Act
   }
 
+  extend type Mutation {
+    createAct(title: String, content: String): Act
+    deleteAct(id: ID): Boolean
+  }
+
   type Act {
     id: ID
     title: String

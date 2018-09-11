@@ -1,6 +1,6 @@
 import Sequelize from "sequelize";
 import { combineResolvers } from "graphql-resolvers";
-import { isAuthenticated } from "./authorization";
+import { isAuthenticated, isActOwner } from "./authorization";
 //For subscription sake (Resolver)
 import pubsub, { EVENTS } from "../subscription";
 
@@ -18,12 +18,34 @@ export default {
   },
 
   Mutation: {
-    
+    createAct: combineResolvers(
+      isAuthenticated,
+      async (parent, { title, content }, { models, me }) => {
+        const Act = await models.Act.create({
+          title,
+          content,
+          userId: me.id
+        });
+        // pubsub.publish(EVENTS.Act.CREATED, {
+        //   actCreated: { Act }
+        // });
+        return Act;
+      }
+    ),
+    deleteAct: combineResolvers(
+      isAuthenticated,
+      isActOwner,
+      async (parent, { id }, { models }) => {
+        return models.Act.destroy({
+          where: { id }
+        });
+      }
+    )
   },
 
   Act: {
     user: async (message, args, { models }) => {
-      return await models.User.findById(message.userId)
+      return await models.User.findById(message.userId);
     },
     movements: async (act, args, { models, loaders }) => {
       // const result = await loaders.messages.load(user.id);

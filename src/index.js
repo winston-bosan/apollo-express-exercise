@@ -29,16 +29,6 @@ const server = new ApolloServer({
   introspection: true,
   typeDefs: schema,
   resolvers,
-  formatError: error => {
-    const act = error.act
-      .replace("SequelizeValidationError: ", "")
-      .replace("Validation error: ", "");
-
-    return {
-      ...error,
-      act
-    };
-  },
   context: async ({ req, connection }) => {
     if (connection) {
       return {
@@ -150,7 +140,8 @@ const createUsersWithActs = async date => {
             {
               title: "Published",
               content: "This is",
-              createdAt: date.setSeconds(date.getSeconds() + 2)
+              createdAt: date.setSeconds(date.getSeconds() + 2),
+              completed: true
             }
           ]
         },

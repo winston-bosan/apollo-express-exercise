@@ -16,6 +16,11 @@ const movement = (sequelize, DataTypes) => {
             msg: "An movement has to have a title that is not empty."
           }
         }
+      },
+      completed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
       }
     });
   

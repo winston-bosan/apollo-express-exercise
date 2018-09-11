@@ -12,9 +12,19 @@ export const isActOwner = async (parent, { id }, { models, me }) => {
   return skip;
 };
 
+export const isMovementOwner = async (parent, { id }, { models, me }) => {
+  const movement = await models.Movement.findById(id, { raw: true });
+  const act = await models.Act.findById(movement.actId, { raw: true });
+  console.log(act.userId, me.id)
+  if (act.userId !== me.id) {
+    throw new ForbiddenError("Not authenticated as owner.");
+  }
+  return skip;
+};
+
 export const isAdmin = combineResolvers(
   isAuthenticated,
-  async (parent, args, { me: {role} }) => {
+  async (parent, args, { me: { role } }) => {
     if (role !== "ADMIN") {
       throw new ForbiddenError("Not authorized as Admin.");
     }
