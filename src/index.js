@@ -131,6 +131,7 @@ const createUsersWithActs = async date => {
           title: "Happy to release ...",
           content: "This is something...",
           createdAt: date.setSeconds(date.getSeconds() + 2),
+          sortOrder: 50,
           vud: {
             value: 1,
             urgency: 8,
@@ -149,6 +150,25 @@ const createUsersWithActs = async date => {
           title: "Published a complete ...",
           content: "... you should be doing anyways",
           createdAt: date.setSeconds(date.getSeconds() + 2),
+          sortOrder: -100,
+          vud: {
+            value: 1,
+            urgency: 8,
+            duration: 3
+          },
+          movements: [
+            {
+              title: "Published",
+              content: "This is",
+              createdAt: date.setSeconds(date.getSeconds() + 2)
+            }
+          ]
+        },
+        {
+          title: "The third? ...",
+          content: "... you should be doing anyways",
+          createdAt: date.setSeconds(date.getSeconds() + 2),
+          sortOrder: -50,
           vud: {
             value: 1,
             urgency: 8,

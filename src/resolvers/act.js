@@ -20,10 +20,11 @@ export default {
   Mutation: {
     createAct: combineResolvers(
       isAuthenticated,
-      async (parent, { title, content }, { models, me }) => {
+      async (parent, { title, content, sortOrder }, { models, me }) => {
         const Act = await models.Act.create({
           title,
           content,
+          sortOrder,
           userId: me.id
         });
         // pubsub.publish(EVENTS.Act.CREATED, {

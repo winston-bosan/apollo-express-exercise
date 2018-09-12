@@ -7,7 +7,7 @@ export default gql`
   }
 
   extend type Mutation {
-    createAct(title: String, content: String): Act
+    createAct(title: String, content: String, sortOrder: Int): Act
     deleteAct(id: ID): Boolean
   }
 
@@ -19,6 +19,7 @@ export default gql`
     createdAt: String
     movements: [Movement]
     vud: Vud
+    sortOrder: Int
   }
 
   type Vud {

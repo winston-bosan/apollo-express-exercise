@@ -16,6 +16,15 @@ const act = (sequelize, DataTypes) => {
           msg: "An act has to have a title that is not empty."
         }
       }
+    },
+    sortOrder: {
+      type: DataTypes.INTEGER,
+      validate: {
+        notEmpty: {
+          args: true,
+          msg: "An act has to have a sort order that is not empty."
+        }
+      }
     }
   });
 
