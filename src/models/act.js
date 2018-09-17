@@ -18,7 +18,7 @@ const act = (sequelize, DataTypes) => {
       }
     },
     sortOrder: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.FLOAT,
       validate: {
         notEmpty: {
           args: true,

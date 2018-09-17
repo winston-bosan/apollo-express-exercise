@@ -5,15 +5,14 @@ import { isAuthenticated, isActOwner } from "./authorization";
 import pubsub, { EVENTS } from "../subscription";
 
 const toCursorHash = string => Buffer.from(string).toString("base64");
-
 const fromCursorHash = string =>
   Buffer.from(string, "base64").toString("ascii");
 
 export default {
   Query: {
     //Cursor-based Pagination
-    acts: async (parent, { cursor, limit = 100 }, { models }) => {
-      return models.Act.findAll({});
+    acts: async (parent, { cursor, limit = 100 }, { models, me }) => {
+      return models.Act.findAll({ where: { userId: me.id } });
     }
   },
 
@@ -27,9 +26,11 @@ export default {
           sortOrder,
           userId: me.id
         });
-        // pubsub.publish(EVENTS.Act.CREATED, {
-        //   actCreated: { Act }
-        // });
+        pubsub.publish(EVENTS.ACT.CREATED, {
+          actCreated: {
+            act: Act
+          }
+        });
         return Act;
       }
     ),
@@ -37,9 +38,33 @@ export default {
       isAuthenticated,
       isActOwner,
       async (parent, { id }, { models }) => {
-        return models.Act.destroy({
+        const destroyResult = await models.Act.destroy({
           where: { id }
         });
+        pubsub.publish(EVENTS.ACT.REMOVED, {
+          actRemoved: {
+            actId: destroyResult ? id : null
+          }
+        });
+        return destroyResult;
+      }
+    ),
+    modifySortOrder: combineResolvers(
+      isAuthenticated,
+      isActOwner,
+      async (parent, { id, sortOrder }, { models }) => {
+        const act = await models.Act.findById(id);
+
+        act.sortOrder = sortOrder;
+        act.save().then(() => {});
+
+        pubsub.publish(EVENTS.ACT.MODIFIED, {
+          actModified: {
+            act: act
+          }
+        });
+
+        return !!act;
       }
     )
   },
@@ -64,5 +89,15 @@ export default {
   },
 
   //Subscribing to the Subscr
-  Subscription: {}
+  Subscription: {
+    actCreated: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.ACT.CREATED)
+    },
+    actModified: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.ACT.MODIFIED)
+    },
+    actRemoved: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.ACT.REMOVED)
+    }
+  }
 };

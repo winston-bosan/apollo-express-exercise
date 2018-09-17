@@ -19,12 +19,19 @@ export default {
     createMovement: combineResolvers(
       isAuthenticated,
       async (parent, { title, content, actId }, { models, me }) => {
-        let parentAct = await models.Act.findById(actId);
+        // let parentAct = await models.Act.findById(actId);
         const Movement = await models.Movement.create({
           title,
           content,
           actId
         });
+
+        pubsub.publish(EVENTS.MOVEMENT.CREATED, {
+          movementCreated: {
+            movement: Movement
+          }
+        });
+
         return Movement;
       }
     ),
@@ -32,9 +39,17 @@ export default {
       isAuthenticated,
       isMovementOwner,
       async (parent, { id }, { models }) => {
-        return models.Movement.destroy({
+        const destroyedMovement = models.Movement.destroy({
           where: { id }
         });
+
+        pubsub.publish(EVENTS.MOVEMENT.CREATED, {
+          movementRemoved: {
+            movementId: destroyedMovement ? id : null
+          }
+        });
+
+        return destroyedMovement;
       }
     ),
     toggleCompleted: combineResolvers(
@@ -42,9 +57,17 @@ export default {
       isMovementOwner,
       async (parent, { id }, { models }) => {
         const movement = await models.Movement.findById(id);
-        console.log(movement)
+
         movement.completed = !movement.completed;
-        movement.save().then(() => {})
+        movement.save().then(() => {});
+
+        pubsub.publish(EVENTS.MOVEMENT.MODIFIED, {
+          movementModified: {
+            movementId: id,
+            completed: movement.completed
+          }
+        });
+
         return !!movement;
       }
     )
@@ -65,10 +88,21 @@ export default {
 
     parentId: async (movement, args, { models }) => {
       let test = await models.Act.findById(movement.actId);
+      // console.log(test.id)
       return test.id;
     }
   },
 
   //Subscribing to the Subscr
-  Subscription: {}
+  Subscription: {
+    movementCreated: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.MOVEMENT.CREATED)
+    },
+    movementModified: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.MOVEMENT.MODIFIED)
+    },
+    movementRemoved: {
+      subscribe: () => pubsub.asyncIterator(EVENTS.MOVEMENT.REMOVED)
+    }
+  }
 };

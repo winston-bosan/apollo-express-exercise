@@ -92,34 +92,35 @@ const getMe = async req => {
 };
 
 const createUsersWithActs = async date => {
-  // await models.User.create(
-  //   {
-  //     username: "rwieruch",
-  //     email: "hello@robin.com",
-  //     password: "rwieruch",
-  //     //this is for our test for the new Permission Role based authentication system
-  //     role: "ADMIN",
-  //     acts: [
-  //       {
-  //         title: "Published the Road to learn React",
-  //         content: "This is something you should be doing anyways",
-  //         createdAt: date.setSeconds(date.getSeconds() + 2),
-  //         // movements: [
-  //         //   {
-  //         //     title: "Published",
-  //         //     content: "This is",
-  //         //     createdAt: date.setSeconds(date.getSeconds() + 2),
-  //         //   }
-  //         // ]
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     include: [{ association: models.Act, include: [models.Movement] }]
-  //   }
-  // ).catch(error => {
-  //   console.log(error);
-  // });
+  await models.User.create(
+    {
+      username: "rwieruch",
+      email: "hello@robin.com",
+      password: "rwieruch",
+      //this is for our test for the new Permission Role based authentication system
+      role: "ADMIN",
+      acts: [
+        {
+          title: "Published the Road to learn React",
+          content: "This is something you should be doing anyways",
+          createdAt: date.setSeconds(date.getSeconds() + 2),
+          sortOrder: 50,
+          movements: [
+            {
+              title: "This belongs NOT to you!",
+              content: "This is",
+              createdAt: date.setSeconds(date.getSeconds() + 2),
+            }
+          ]
+        }
+      ]
+    },
+    {
+      include: { model: models.Act, include: [models.Movement] }
+    }
+  ).catch(error => {
+    console.log(error);
+  });
 
   await models.User.create(
     {

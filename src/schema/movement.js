@@ -12,6 +12,12 @@ export default gql`
     toggleCompleted(id: ID): Boolean
   }
 
+  extend type Subscription {
+    movementCreated: MovementCreated
+    movementModified: MovementModified
+    movementRemoved: MovementRemoved
+  }
+
   type Movement {
     id: ID
     title: String
@@ -23,4 +29,15 @@ export default gql`
     createdAt: String
     completed: Boolean
   }
+
+  type MovementCreated {
+    movement: Movement
+  }
+  type MovementModified {
+    movement: Movement
+  }
+  type MovementRemoved {
+    movementId: ID
+  }
+
 `;
