@@ -7,8 +7,20 @@ import pubsub, { EVENTS } from "../subscription";
 export default {
   Query: {
     //Cursor-based Pagination
-    movements: async (parent, { cursor, limit = 100 }, { models }) => {
-      return (await models.Movement.findAll({})) || [];
+    movements: async (parent, { cursor, limit = 100 }, { models, me }) => {
+      console.log(me.id)
+      const result =
+        (await models.Movement.findAll({
+          include: [
+            {
+              model: models.Act,
+              where: { userId: me.id },
+              attributes: ["userId"],
+              required: true
+            }
+          ]
+        })) || [];
+      return result;
     },
     movement: async (parent, { id }, { models }) => {
       return await models.Movement.findById(id);
@@ -63,8 +75,7 @@ export default {
 
         pubsub.publish(EVENTS.MOVEMENT.MODIFIED, {
           movementModified: {
-            movementId: id,
-            completed: movement.completed
+            movement
           }
         });
 
@@ -90,6 +101,12 @@ export default {
       let test = await models.Act.findById(movement.actId);
       // console.log(test.id)
       return test.id;
+    },
+
+    userId: async (movement, args, { models }) => {
+      let test = await models.Act.findById(movement.actId);
+      // console.log(test.id)
+      return test.userId;
     }
   },
 

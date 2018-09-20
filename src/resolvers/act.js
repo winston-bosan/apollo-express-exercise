@@ -66,6 +66,23 @@ export default {
 
         return !!act;
       }
+    ),
+    mergeAct: combineResolvers(
+      isAuthenticated,
+      isActOwner,
+      async (parent, { id, input }, { models }) => {
+        const act = await models.Act.findById(id);
+        act.update(input)
+        act.save().then(() => {});
+
+        pubsub.publish(EVENTS.ACT.MODIFIED, {
+          actModified: {
+            act: act
+          }
+        });
+
+        return act;
+      }
     )
   },
 

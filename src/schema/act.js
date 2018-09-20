@@ -10,6 +10,7 @@ export default gql`
     createAct(title: String, content: String, sortOrder: Int): Act
     deleteAct(id: ID): Boolean
     modifySortOrder(id: ID, sortOrder: Float): Boolean
+    mergeAct(id: ID, input: ActInput): Act
   }
 
   extend type Subscription {
@@ -28,6 +29,21 @@ export default gql`
     vud: Vud
     sortOrder: Float
   }
+
+  input ActInput {
+    id: ID
+    title: String
+    content: String
+    userId: String
+    createdAt: String
+    movements: [MovementIdInput]
+    sortOrder: Float
+   }
+
+  input MovementIdInput{
+    id: ID
+  }
+  
 
   type ActCreated {
     act: Act
