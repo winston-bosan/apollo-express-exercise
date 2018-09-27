@@ -38,6 +38,7 @@ const user = (sequelize, DataTypes) => {
 
   User.associate = models => {
     User.hasMany(models.Act);
+    User.hasMany(models.List);
   };
 
   User.beforeCreate(async user => {

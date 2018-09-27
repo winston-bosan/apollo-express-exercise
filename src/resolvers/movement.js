@@ -3,12 +3,13 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated, isMovementOwner } from "./authorization";
 //For subscription sake (Resolver)
 import pubsub, { EVENTS } from "../subscription";
+import { withFilter } from "graphql-subscriptions";
 
 export default {
   Query: {
     //Cursor-based Pagination
     movements: async (parent, { cursor, limit = 100 }, { models, me }) => {
-      console.log(me.id)
+      console.log(me.id);
       const result =
         (await models.Movement.findAll({
           include: [
@@ -55,13 +56,30 @@ export default {
           where: { id }
         });
 
-        pubsub.publish(EVENTS.MOVEMENT.CREATED, {
+        pubsub.publish(EVENTS.MOVEMENT.REMOVED, {
           movementRemoved: {
             movementId: destroyedMovement ? id : null
           }
         });
 
         return destroyedMovement;
+      }
+    ),
+    mergeMovement: combineResolvers(
+      isAuthenticated,
+      isMovementOwner,
+      async (parent, { id, input }, { models }) => {
+        const movement = await models.Movement.findById(id);
+        movement.update(input);
+        movement.save().then(() => {});
+
+        pubsub.publish(EVENTS.MOVEMENT.MODIFIED, {
+          movementModified: {
+            movement: movement
+          }
+        });
+
+        return movement;
       }
     ),
     toggleCompleted: combineResolvers(

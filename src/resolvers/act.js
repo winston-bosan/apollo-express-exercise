@@ -3,6 +3,8 @@ import { combineResolvers } from "graphql-resolvers";
 import { isAuthenticated, isActOwner } from "./authorization";
 //For subscription sake (Resolver)
 import pubsub, { EVENTS } from "../subscription";
+import { withFilter } from "apollo-server";
+import jwt from "jsonwebtoken";
 
 const toCursorHash = string => Buffer.from(string).toString("base64");
 const fromCursorHash = string =>
@@ -19,12 +21,13 @@ export default {
   Mutation: {
     createAct: combineResolvers(
       isAuthenticated,
-      async (parent, { title, content, sortOrder }, { models, me }) => {
+      async (parent, { title, content, sortOrder, listId }, { models, me }) => {
         const Act = await models.Act.create({
           title,
           content,
           sortOrder,
-          userId: me.id
+          userId: me.id,
+          listId: listId
         });
         pubsub.publish(EVENTS.ACT.CREATED, {
           actCreated: {
@@ -37,13 +40,14 @@ export default {
     deleteAct: combineResolvers(
       isAuthenticated,
       isActOwner,
-      async (parent, { id }, { models }) => {
+      async (parent, { id }, { models, me }) => {
         const destroyResult = await models.Act.destroy({
           where: { id }
         });
         pubsub.publish(EVENTS.ACT.REMOVED, {
           actRemoved: {
-            actId: destroyResult ? id : null
+            actId: destroyResult ? id : null,
+            userId: me.id
           }
         });
         return destroyResult;
@@ -72,7 +76,7 @@ export default {
       isActOwner,
       async (parent, { id, input }, { models }) => {
         const act = await models.Act.findById(id);
-        act.update(input)
+        act.update(input);
         act.save().then(() => {});
 
         pubsub.publish(EVENTS.ACT.MODIFIED, {
@@ -87,8 +91,11 @@ export default {
   },
 
   Act: {
-    user: async (message, args, { models }) => {
-      return await models.User.findById(message.userId);
+    user: async (_, args, { models }) => {
+      return await models.User.findById(_.userId);
+    },
+    list: async (_, args, { models }) => {
+      return await models.List.findById(_.listId);
     },
     movements: async (act, args, { models, loaders }) => {
       // const result = await loaders.messages.load(user.id);
@@ -108,13 +115,47 @@ export default {
   //Subscribing to the Subscr
   Subscription: {
     actCreated: {
-      subscribe: () => pubsub.asyncIterator(EVENTS.ACT.CREATED)
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(EVENTS.ACT.CREATED),
+        async (payload, variables) => {
+          const payloadUserId = payload.actCreated.act.userId;
+          const decodedToken = await jwt.verify(
+            variables.token,
+            process.env.SECRET
+          );
+          // console.log(payloadUserId, decodedToken.id);
+          return payloadUserId === decodedToken.id;
+        }
+      )
     },
     actModified: {
-      subscribe: () => pubsub.asyncIterator(EVENTS.ACT.MODIFIED)
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(EVENTS.ACT.MODIFIED),
+        async (payload, variables) => {
+          const payloadUserId = payload.actModified.act.userId;
+          const decodedToken = await jwt.verify(
+            variables.token,
+            process.env.SECRET
+          );
+          // console.log(payloadUserId, decodedToken.id);
+          return payloadUserId === decodedToken.id;
+        }
+      )
     },
     actRemoved: {
-      subscribe: () => pubsub.asyncIterator(EVENTS.ACT.REMOVED)
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(EVENTS.ACT.REMOVED),
+        async (payload, variables) => {
+          const payloadUserId = payload.actRemoved.userId;
+          // console.log(payloadUserId);
+          const decodedToken = await jwt.verify(
+            variables.token,
+            process.env.SECRET
+          );
+          // console.log(payloadUserId, decodedToken.id);
+          return payloadUserId === decodedToken.id;
+        }
+      )
     }
   }
 };

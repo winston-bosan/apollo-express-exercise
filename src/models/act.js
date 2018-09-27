@@ -29,6 +29,7 @@ const act = (sequelize, DataTypes) => {
   });
 
   Act.associate = models => {
+    Act.belongsTo(models.List);
     Act.belongsTo(models.User);
     Act.hasMany(models.Movement);
   };

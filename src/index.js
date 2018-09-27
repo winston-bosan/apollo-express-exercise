@@ -99,96 +99,157 @@ const createUsersWithActs = async date => {
       password: "rwieruch",
       //this is for our test for the new Permission Role based authentication system
       role: "ADMIN",
-      acts: [
+      lists: [
         {
-          title: "Published the Road to learn React",
-          content: "This is something you should be doing anyways",
-          createdAt: date.setSeconds(date.getSeconds() + 2),
+          title: "Main List",
           sortOrder: 50,
-          movements: [
+          acts: [
             {
-              title: "This belongs NOT to you!",
-              content: "This is",
+              title: "Published the Road to learn React",
+              content: "This is something you should be doing anyways",
               createdAt: date.setSeconds(date.getSeconds() + 2),
+              sortOrder: 50,
+              movements: [
+                {
+                  title: "This belongs NOT to you!",
+                  content: "This is",
+                  createdAt: date.setSeconds(date.getSeconds() + 2)
+                }
+              ]
             }
           ]
         }
       ]
     },
     {
-      include: { model: models.Act, include: [models.Movement] }
+      include: [
+        {
+          model: models.List,
+          include: [{ model: models.Act, include: [models.Movement] }]
+        }
+      ]
     }
-  ).catch(error => {
-    console.log(error);
-  });
+  )
+    .then(rwieruch => {
+      const primary = rwieruch.lists[0].acts;
+      primary[0].setUser(rwieruch);
+    })
+    .catch(error => {
+      console.log(error);
+    });
 
   await models.User.create(
     {
       username: "ddavids",
       email: "hello@david.com",
       password: "ddavids",
-      acts: [
+      lists: [
         {
-          title: "Happy to release ...",
-          content: "This is something...",
-          createdAt: date.setSeconds(date.getSeconds() + 2),
+          title: "Main List",
           sortOrder: 50,
-          vud: {
-            value: 1,
-            urgency: 8,
-            duration: 3
-          },
-          movements: [
+          acts: [
             {
-              title: "Published",
-              content: "This is",
+              title: "Happy to release ...",
+              content: "This is something...",
               createdAt: date.setSeconds(date.getSeconds() + 2),
-              completed: true
+              sortOrder: 50,
+              vud: {
+                value: 1,
+                urgency: 8,
+                duration: 3
+              },
+              movements: [
+                {
+                  title: "Published",
+                  content: "This is",
+                  createdAt: date.setSeconds(date.getSeconds() + 2),
+                  completed: true
+                }
+              ]
+            },
+            {
+              title: "Published a complete ...",
+              content: "... you should be doing anyways",
+              createdAt: date.setSeconds(date.getSeconds() + 2),
+              sortOrder: -100,
+              vud: {
+                value: 1,
+                urgency: 8,
+                duration: 3
+              },
+              movements: [
+                {
+                  title: "Published",
+                  content: "This is",
+                  createdAt: date.setSeconds(date.getSeconds() + 2)
+                }
+              ]
+            },
+            {
+              title: "The third? ...",
+              content: "... you should be doing anyways",
+              createdAt: date.setSeconds(date.getSeconds() + 2),
+              sortOrder: -50,
+              vud: {
+                value: 1,
+                urgency: 8,
+                duration: 3
+              },
+              movements: [
+                {
+                  title: "Published",
+                  content: "This is",
+                  createdAt: date.setSeconds(date.getSeconds() + 2)
+                }
+              ]
             }
           ]
         },
         {
-          title: "Published a complete ...",
-          content: "... you should be doing anyways",
-          createdAt: date.setSeconds(date.getSeconds() + 2),
-          sortOrder: -100,
-          vud: {
-            value: 1,
-            urgency: 8,
-            duration: 3
-          },
-          movements: [
+          title: "Secondary List",
+          sortOrder: 40,
+          acts: [
             {
-              title: "Published",
-              content: "This is",
-              createdAt: date.setSeconds(date.getSeconds() + 2)
-            }
-          ]
-        },
-        {
-          title: "The third? ...",
-          content: "... you should be doing anyways",
-          createdAt: date.setSeconds(date.getSeconds() + 2),
-          sortOrder: -50,
-          vud: {
-            value: 1,
-            urgency: 8,
-            duration: 3
-          },
-          movements: [
-            {
-              title: "Published",
-              content: "This is",
-              createdAt: date.setSeconds(date.getSeconds() + 2)
+              title: "This is on the secondary list ...",
+              content: "I am the primary act for the secondayr lsit...",
+              createdAt: date.setSeconds(date.getSeconds() + 2),
+              sortOrder: 50,
+              vud: {
+                value: 1,
+                urgency: 8,
+                duration: 3
+              },
+              movements: [
+                {
+                  title: "Uselses movement in secondary list",
+                  content: "secondary list",
+                  createdAt: date.setSeconds(date.getSeconds() + 2),
+                  completed: true
+                }
+              ]
             }
           ]
         }
       ]
     },
     {
-      include: { model: models.Act, include: [models.Movement] }
+      include: [
+        {
+          model: models.List,
+          include: [{ model: models.Act, include: [models.Movement] }]
+        }
+      ]
     }
-  ).catch(error => {
-    console.log(error);
-  });
+  )
+    .then(ddavids => {
+      const primary = ddavids.lists[0].acts;
+      const secondary = ddavids.lists[1].acts;
+      primary[0].setUser(ddavids);
+      primary[1].setUser(ddavids);
+      primary[2].setUser(ddavids);
+      secondary[0].setUser(ddavids);
+    })
+    .catch(error => {
+      console.log(error);
+    });
 };

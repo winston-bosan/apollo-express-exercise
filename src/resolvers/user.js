@@ -32,6 +32,29 @@ export default {
       { username, email, password },
       { models, secret }
     ) => {
+      //First, verify if there is already an user with the same 1. Email || 2. password
+      const userSameEmail = await models.User.findOne({
+        where: { email: email }
+      });
+
+      // if there is a user with the same email
+      if (!!userSameEmail) {
+        throw new UserInputError(
+          "There has already been an account associated with this email."
+        );
+      } else {
+        console.log("No same email");
+        const userSameUsername = await models.User.findOne({
+          where: { username: username }
+        });
+        if (!!userSameUsername) {
+          throw new UserInputError(
+            "There has already been an account associated with this username."
+          );
+        }
+      }
+      console.log("No same username");
+
       const user = await models.User.create({
         username,
         email,
@@ -50,7 +73,7 @@ export default {
       if (!isValid) {
         throw new AuthenticationError("Invalid password.");
       }
-      console.log('user logged in')
+      console.log("user logged in");
       return { token: createToken(user, secret, "30m") };
     },
 
@@ -72,16 +95,16 @@ export default {
         }
       });
     },
-    movements: async (user, args ,{ models }) => {
+    movements: async (user, args, { models }) => {
       let childrenActs = await models.Act.findAll({
         where: {
           userId: user.id
         }
-      })
+      });
       let childrenActsIds = childrenActs.map(act => {
-        return act.id
-      })
-      console.log(childrenActsIds)
+        return act.id;
+      });
+      console.log(childrenActsIds);
       let grandchildrenMovements = await models.Movement.findAll({
         where: {
           actId: childrenActsIds

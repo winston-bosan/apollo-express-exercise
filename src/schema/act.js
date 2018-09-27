@@ -7,22 +7,23 @@ export default gql`
   }
 
   extend type Mutation {
-    createAct(title: String, content: String, sortOrder: Int): Act
+    createAct(title: String, content: String, sortOrder: Float, listId: ID): Act
     deleteAct(id: ID): Boolean
     modifySortOrder(id: ID, sortOrder: Float): Boolean
     mergeAct(id: ID, input: ActInput): Act
   }
 
   extend type Subscription {
-    actCreated: ActCreated
-    actModified: ActModified
-    actRemoved: ActRemoved
+    actCreated(token: String): ActCreated
+    actModified(token: String): ActModified
+    actRemoved(token: String): ActRemoved
   }
 
   type Act {
     id: ID
     title: String
     content: String
+    list: List
     user: User
     createdAt: String
     movements: [Movement]
@@ -34,6 +35,7 @@ export default gql`
     id: ID
     title: String
     content: String
+    listId: String
     userId: String
     createdAt: String
     movements: [MovementIdInput]
@@ -52,7 +54,8 @@ export default gql`
     act: Act
   }
   type ActRemoved {
-    actId: ID
+    actId: ID,
+    userId: ID
   }
 
   type Vud {

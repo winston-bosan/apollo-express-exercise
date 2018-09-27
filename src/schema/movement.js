@@ -9,6 +9,7 @@ export default gql`
   extend type Mutation {
     createMovement(title: String, content: String, actId: ID): Movement
     deleteMovement(id: ID): Boolean
+    mergeMovement(id: ID, input: MovementInput): Movement
     toggleCompleted(id: ID): Boolean
   }
 
@@ -16,6 +17,12 @@ export default gql`
     movementCreated: MovementCreated
     movementModified: MovementModified
     movementRemoved: MovementRemoved
+  }
+
+  input MovementInput {
+    title: String
+    content: String
+    completed: Boolean
   }
 
   type Movement {
@@ -29,6 +36,7 @@ export default gql`
     createdAt: String
     completed: Boolean
   }
+
 
   type MovementCreated {
     movement: Movement
