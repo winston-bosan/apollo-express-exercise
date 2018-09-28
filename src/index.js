@@ -53,7 +53,7 @@ const server = new ApolloServer({
     }
   }
 });
-
+app.get('/', (req, res) => res.send('Hello World!'))
 server.applyMiddleware({ app, path: "/graphql" });
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
