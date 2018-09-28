@@ -11,6 +11,7 @@
 
 # eb
 .elasticbeanstalk/
+/ebextensions
 
 # misc
 .DS_Store
