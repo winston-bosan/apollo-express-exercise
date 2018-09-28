@@ -15,6 +15,9 @@ export default {
     //Cursor-based Pagination
     acts: async (parent, { cursor, limit = 100 }, { models, me }) => {
       return models.Act.findAll({ where: { userId: me.id } });
+    },
+    act: async (parent, { id }, { models, me }) => {
+      return models.Act.findOne({ where: { userId: me.id, id: id } });
     }
   },
 

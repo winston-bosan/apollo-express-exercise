@@ -14,9 +14,9 @@ export default gql`
   }
 
   extend type Subscription {
-    movementCreated: MovementCreated
-    movementModified: MovementModified
-    movementRemoved: MovementRemoved
+    movementCreated(token: String): MovementCreated
+    movementModified(token: String): MovementModified
+    movementRemoved(token: String): MovementRemoved
   }
 
   input MovementInput {
@@ -46,6 +46,7 @@ export default gql`
   }
   type MovementRemoved {
     movementId: ID
+    userId: ID
   }
 
 `;

@@ -66,12 +66,12 @@ const port = process.env.PORT || 8000;
 
 sequelize
   .sync({
-    force:
-      //isTest || isProduction
-      eraseDatabaseOnSync
+    force: isTest || isProduction
   })
   .then(async () => {
-    createUsersWithActs(new Date());
+    if (isTest) {
+      createUsersWithActs(new Date());
+    }
     httpServer.listen({ port }, () => {
       console.log(
         `\n🚀  Apollo Initialed on \x1b[33mhttp://localhost:${port}/graphql\x1b[0m\n`

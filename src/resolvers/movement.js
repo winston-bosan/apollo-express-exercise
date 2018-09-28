@@ -4,6 +4,7 @@ import { isAuthenticated, isMovementOwner } from "./authorization";
 //For subscription sake (Resolver)
 import pubsub, { EVENTS } from "../subscription";
 import { withFilter } from "graphql-subscriptions";
+import jwt from "jsonwebtoken";
 
 export default {
   Query: {
@@ -51,14 +52,15 @@ export default {
     deleteMovement: combineResolvers(
       isAuthenticated,
       isMovementOwner,
-      async (parent, { id }, { models }) => {
+      async (parent, { id }, { models, me }) => {
         const destroyedMovement = models.Movement.destroy({
           where: { id }
         });
 
         pubsub.publish(EVENTS.MOVEMENT.REMOVED, {
           movementRemoved: {
-            movementId: destroyedMovement ? id : null
+            movementId: destroyedMovement ? id : null,
+            userId: me.id
           }
         });
 
@@ -131,13 +133,52 @@ export default {
   //Subscribing to the Subscr
   Subscription: {
     movementCreated: {
-      subscribe: () => pubsub.asyncIterator(EVENTS.MOVEMENT.CREATED)
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(EVENTS.MOVEMENT.CREATED),
+        async (payload, variables) => {
+          //First, retrieve the movement's parrent, and then the user's id
+          const actOfMovement = await context.models.Act.findOne({where: {
+            id: payload.movementCreated.movement.actId
+          }})
+          const payloadUserId = actOfMovement.userId;
+          const decodedToken = await jwt.verify(
+            variables.token,
+            process.env.SECRET
+          );
+          return payloadUserId === decodedToken.id;
+        }
+      )
     },
     movementModified: {
-      subscribe: () => pubsub.asyncIterator(EVENTS.MOVEMENT.MODIFIED)
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(EVENTS.MOVEMENT.MODIFIED),
+        async (payload, variables, context) => {
+
+          //First, retrieve the movement's parrent, and then the user's id
+          const actOfMovement = await context.models.Act.findOne({where: {
+            id: payload.movementModified.movement.actId
+          }})
+          const payloadUserId = actOfMovement.userId;
+          const decodedToken = await jwt.verify(
+            variables.token,
+            process.env.SECRET
+          );
+          return payloadUserId === decodedToken.id;
+        }
+      )
     },
     movementRemoved: {
-      subscribe: () => pubsub.asyncIterator(EVENTS.MOVEMENT.REMOVED)
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(EVENTS.MOVEMENT.REMOVED),
+        async (payload, variables) => {
+          const payloadUserId = payload.movementRemoved.userId;
+          const decodedToken = await jwt.verify(
+            variables.token,
+            process.env.SECRET
+          );
+          return payloadUserId === decodedToken.id;
+        }
+      )
     }
   }
 };
