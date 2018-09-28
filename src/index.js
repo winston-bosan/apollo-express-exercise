@@ -13,6 +13,17 @@ import schema from "./schema";
 import resolvers from "./resolvers";
 import models, { sequelize } from "./models";
 
+//ssl config
+const configurations = {
+  // Note: You may need sudo to run on port 443
+  production: { ssl: false, port: 443, hostname: 'example.com' },
+  development: { ssl: false, port: 4000, hostname: 'localhost' }
+}
+
+const environment = process.env.NODE_ENV || 'production'
+const config = configurations[environment];
+
+
 /*
  * Middlewares:
  *  1. Cors
@@ -55,7 +66,24 @@ const server = new ApolloServer({
 });
 app.get('/', (req, res) => res.send('Hello World!'))
 server.applyMiddleware({ app, path: "/graphql" });
-const httpServer = http.createServer(app);
+
+//HTTP or HTTPS?
+let httpServer;
+if (config.ssl) {
+  // Assumes certificates are in .ssl folder from package root. Make sure the files
+  // are secured.
+  httpServer = https.createServer(
+    {
+      key: fs.readFileSync(`./ssl/${environment}/server.key`),
+      cert: fs.readFileSync(`./ssl/${environment}/server.crt`)
+    },
+    app
+  )
+} else {
+  httpServer = http.createServer(app)
+}
+
+
 server.installSubscriptionHandlers(httpServer);
 // const eraseDatabaseOnSync = true;
 
