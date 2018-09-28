@@ -8,9 +8,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./node_modules/.bin/babel-node --presets env,stage-2 src/index.js",
-    "prod-start": "node ./node_modules/.bin/babel-node --presets env,stage-2 src/index.js",
-    "test-server": "TEST_DATABASE=postgres npm start",
+    "dev": "NODE_ENV=development nodemon ./node_modules/.bin/babel-node --presets env,stage-2 src/index.js",
+    "start": "node ./node_modules/.bin/babel-node --presets env,stage-2 src/index.js",
+    "test-server": "TEST_DATABASE=postgres npm dev",
     "test": "mocha --require babel-core/register 'src/**/*.spec.js'"
   },
   "keywords": [],

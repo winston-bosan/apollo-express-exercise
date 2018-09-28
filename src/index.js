@@ -57,19 +57,20 @@ app.get('/', (req, res) => res.send('Hello World!'))
 server.applyMiddleware({ app, path: "/graphql" });
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
-const eraseDatabaseOnSync = true;
+// const eraseDatabaseOnSync = true;
 
 //Test for dev environment / test
 const isTest = !!process.env.TEST_DATABASE;
+const isDev = process.env.NODE_ENV === 'development';
 const isProduction = !!process.env.DATABASE_URL;
 const port = process.env.PORT || 8000;
 
 sequelize
   .sync({
-    force: isTest || isProduction
+    force: isTest || isDev
   })
   .then(async () => {
-    if (isTest) {
+    if (isTest || isDev) {
       createUsersWithActs(new Date());
     }
     httpServer.listen({ port }, () => {
