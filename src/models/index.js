@@ -36,6 +36,9 @@ let sequelize;
 if (process.env.DATABASE_URL) {
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
+    dialectOptions: {
+      "ssl": true
+    }
   });
 } else {
   sequelize = new Sequelize(
@@ -44,6 +47,9 @@ if (process.env.DATABASE_URL) {
     process.env.DATABASE_PASSWORD,
     {
       dialect: 'postgres',
+      dialectOptions: {
+        "ssl": true
+      }
     },
   );
 }
