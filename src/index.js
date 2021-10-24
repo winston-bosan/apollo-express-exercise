@@ -20,13 +20,13 @@ import models, { sequelize } from "./models";
  */
 const app = express();
 // 2021.10.23 - Something wrong went with the cors package, updated manually
-// app.use(cors());
-app.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE, OPTIONS');
-  next();
-});
+app.options('/', cors());
+// app.use(function (req, res, next) {
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE, OPTIONS');
+//   next();
+// });
 
 //The set of dataloader cachenabled loaders
 // - Be aware, caching is sometimes problematic with realtime updates!
